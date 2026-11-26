@@ -20,6 +20,7 @@ pneumonia-demo/
 ├── app.py                 # Local Streamlit upload app
 ├── train.py               # Stratified train/validation split and model training
 ├── evaluate.py            # Test split evaluation
+├── setup_and_run.bat      # Windows first-time setup and launcher
 ├── data/                  # Local dataset files (ignored by Git)
 ├── models/                # Local trained weights (ignored by Git)
 └── README.md
@@ -127,3 +128,17 @@ Open the local URL printed in the terminal, usually [http://127.0.0.1:8501](http
 ## Git notes
 
 The `.gitignore` excludes `.venv/`, `data/`, and `models/`, so large local files are not committed. A fresh clone needs the dataset and a newly trained model checkpoint before the app can run.
+
+## Download and run on Windows
+
+To download the source code, click **[Download the project ZIP](https://github.com/codeNotclair/Pneumonia_Ai/archive/refs/heads/main.zip)** and extract it. This downloads the code only; the dataset and trained model are not included.
+
+Before the first launch, download the Kaggle chest X-ray dataset and extract it so that `train` and `test` are inside:
+
+```text
+data/raw/archive/chest_xray/
+```
+
+Then double-click `setup_and_run.bat`. It creates a virtual environment, installs the required packages (using CUDA-enabled PyTorch when an NVIDIA driver is detected), trains a model if no local checkpoint exists, and opens the app at `http://127.0.0.1:8501`. Python 3.10 or newer and internet access are required for the initial package and pretrained-weight downloads. The first launch can take several minutes or longer while packages install and the model trains.
+
+This launcher is for Windows. The app remains local to the computer; nothing is deployed to a public site. Each team member must download the dataset separately and follow its license and Kaggle terms.
