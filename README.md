@@ -132,6 +132,7 @@ The `.gitignore` excludes `.venv/`, `data/`, and `models/`, so large local files
 ## Download and run on Windows
 
 To download the source code, click **[Download the project ZIP](https://github.com/codeNotclair/Pneumonia_Ai/archive/refs/heads/main.zip)** and extract it. This downloads the code only; the dataset and trained model are not included.
+To download DataSet : https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia
 
 Before the first launch, download the Kaggle chest X-ray dataset and extract it so that `train` and `test` are inside:
 
