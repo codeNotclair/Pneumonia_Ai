@@ -81,7 +81,7 @@ data/raw/archive/chest_xray/
     └── PNEUMONIA/
 ```
 
-`train.py` creates a stratified 85/15 train/validation split from `train/`. The dataset's supplied `val/` folder contains only a small number of images, so it is not used. `evaluate.py` uses `test/` for evaluation.
+`train.py` excludes training images whose patient IDs also appear in the official `test/` split, then creates a patient-grouped, stratified train/validation split from the remaining images. Patient groups do not cross the train/validation boundary. The supplied `val/` folder is not used because it contains very few images. `evaluate.py` reports results on the official `test/` split.
 
 Check the dataset's license and terms before redistributing the data or any images. The `data/` and `models/` folders are ignored by Git; this repository contains source code, not the dataset or trained weights.
 
@@ -100,18 +100,18 @@ Training saves the best validation checkpoint to:
 models/pneumonia_resnet18.pth
 ```
 
-The first training run downloads the pretrained ResNet18 weights. The training script runs three epochs and saves the checkpoint with the highest validation accuracy.
+The first training run downloads the pretrained ResNet18 weights. The script runs three epochs and selects the checkpoint using validation balanced accuracy. It chooses the PNEUMONIA decision threshold on validation only; the test split is not used for checkpoint or threshold selection.
 
-### Recorded test result
+### Previous baseline result
 
-For the current training run, the confusion matrix was:
+Before adding patient-grouped validation and excluding train/test patient overlap, the baseline confusion matrix was:
 
 | Actual class | Predicted NORMAL | Predicted PNEUMONIA |
 | --- | ---: | ---: |
 | NORMAL | 117 | 117 |
 | PNEUMONIA | 0 | 390 |
 
-This corresponds to 81.2% overall accuracy, 50.0% recall for NORMAL, and 100.0% recall for PNEUMONIA on this dataset split. In particular, half of the NORMAL test images were incorrectly labeled PNEUMONIA. These results show that this model is not reliable for medical use. Dataset-level results do not establish performance on images from other hospitals, equipment, or patient populations.
+This baseline had 81.2% overall accuracy, 50.0% recall for NORMAL, and 100.0% recall for PNEUMONIA. Patient IDs were shared between the original training and test folders, so this baseline is not an unbiased estimate of generalization. The revised training script removes those overlapping patients from training and uses patient-grouped validation. Run `python train.py` and `python evaluate.py` to produce the revised result, then update this section. Dataset-level results do not establish performance on other hospitals, equipment, or patient populations.
 
 The app's displayed scores are softmax outputs and are **not calibrated medical probabilities**.
 
