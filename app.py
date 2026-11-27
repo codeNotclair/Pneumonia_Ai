@@ -21,16 +21,19 @@ def load_model():
         MODEL_PATH, map_location=device, weights_only=True
     )
     classes = checkpoint["classes"]
+    threshold = float(checkpoint.get("pneumonia_threshold", 0.5))
 
     model = models.resnet18(weights=None)
     model.fc = torch.nn.Linear(model.fc.in_features, len(classes))
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(device)
     model.eval()
-    return model, classes
+    return model, classes, threshold
 
 
-model, classes = load_model()
+model, classes, threshold = load_model()
+normal_index = classes.index("NORMAL")
+pneumonia_index = classes.index("PNEUMONIA")
 
 preprocess = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -50,13 +53,18 @@ if uploaded_file:
     st.image(image, caption="Uploaded X-ray", use_container_width=True)
 
     image_tensor = preprocess(image).unsqueeze(0).to(device)
-
     with torch.no_grad():
-        probabilities = torch.softmax(model(image_tensor), dim=1)[0].cpu()
+        scores = torch.softmax(model(image_tensor), dim=1)[0].cpu()
 
-    predicted_index = int(probabilities.argmax())
+    predicted_index = (
+        pneumonia_index if scores[pneumonia_index].item() >= threshold
+        else normal_index
+    )
     st.subheader(f"Model prediction: {classes[predicted_index]}")
-
-    st.write("Model scores (not calibrated medical probabilities):")
+    st.caption(
+        f"PNEUMONIA decision threshold: {threshold:.2f} "
+        "(selected using the validation split)."
+    )
+    st.write("Raw model scores (not calibrated medical probabilities):")
     for index, class_name in enumerate(classes):
-        st.write(f"{class_name}: {probabilities[index].item():.1%}")
+        st.write(f"{class_name}: {scores[index].item():.1%}")
